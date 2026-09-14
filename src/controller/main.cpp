@@ -34,6 +34,18 @@ void loop() {
     joystick.loop();
     const int x = joystick.getX();
     const int y = joystick.getY();
+    const bool pressed = joystick.isPressed();
+
+    if (!initialized || hasJoystickActivity(x, y, previousX, previousY, pressed, previousPressed)) {
+        lastActivityTime = millis();
+        initialized = true;
+        previousX = x;
+        previousY = y;
+        previousPressed = pressed;
+    }
+
+    if (millis() - lastActivityTime >= INACTIVITY_TIMEOUT) enterDeepSleep();
+
     displayManager.loop();
     uint8_t command = displayManager.getCommand();
     if (command != 255) sendCommand(command);
