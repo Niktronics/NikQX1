@@ -1,27 +1,19 @@
 #include <Arduino.h>
+#include <esp_sleep.h>
 #include <Joystick.h>
 #include <DisplayManager.h>
 #include <EspNowManager.h>
+
+constexpr gpio_num_t JOYSTICK_BUTTON_GPIO = GPIO_NUM_32;
+constexpr uint32_t INACTIVITY_TIMEOUT = 60000;
+constexpr int JOYSTICK_ACTIVITY_THRESHOLD = 150;
 
 Joystick joystick;
 DisplayManager displayManager(joystick);
 EspNowManager espNowManager;
 
-void sendCommand(uint8_t command) {
-    constexpr uint32_t SEND_INTERVAL = 100;
-    static uint32_t lastMessageTime = 0;
-    static uint8_t lastCommand = 255;
-
-    if (command == 255 || millis() - lastMessageTime < SEND_INTERVAL) return;
-    const bool sent = espNowManager.sendMove(command);
-
-    if (command != lastCommand || !sent) {
-        Serial.printf("Comando joystick %u: %s\n", command, sent ? "inviato" : "INVIO FALLITO");
-        lastCommand = command;
-    }
-
-    lastMessageTime = millis();
-}
+void enterDeepSleep();
+bool hasJoystickActivity(int x, int y, int previousX, int previousY, bool pressed, bool previousPressed);
 
 void setup() {
     Serial.begin(115200);
@@ -31,7 +23,14 @@ void setup() {
 }
 
 void loop() {
+    static bool initialized = false;
+    static int previousX = 0;
+    static int previousY = 0;
+    static bool previousPressed = false;
+    static uint32_t lastActivityTime = millis();
+
     joystick.loop();
+
     const int x = joystick.getX();
     const int y = joystick.getY();
     const bool pressed = joystick.isPressed();
@@ -48,9 +47,20 @@ void loop() {
 
     displayManager.loop();
     uint8_t command = displayManager.getCommand();
-    if (command != 255) sendCommand(command);
+    espNowManager.sendCommand(command);
 
-    Serial.println("x: " + String(x) + " y: " + String(y) + " pressed: " + String(joystick.isPressed()) + " longPressed: " + String(joystick.isLongPressed()));
+    Serial.println("x: " + String(joystick.getX()) + " y: " + String(joystick.getY()) + " pressed: " + String(joystick.isPressed()) + " longPressed: " + String(joystick.isLongPressed()));
 
     delay(20);
+}
+
+void enterDeepSleep() {
+    esp_sleep_enable_ext0_wakeup(JOYSTICK_BUTTON_GPIO, 0);
+    while (digitalRead(JOYSTICK_BUTTON_GPIO) == LOW) delay(10);
+    delay(50);
+    esp_deep_sleep_start();
+}
+
+bool hasJoystickActivity(int x, int y, int previousX, int previousY, bool pressed, bool previousPressed) {
+    return abs(x - previousX) >= JOYSTICK_ACTIVITY_THRESHOLD || abs(y - previousY) >= JOYSTICK_ACTIVITY_THRESHOLD || pressed != previousPressed;
 }

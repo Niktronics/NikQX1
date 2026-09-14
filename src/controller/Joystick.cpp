@@ -1,8 +1,8 @@
 #include "Joystick.h"
 #include <Arduino.h>
 
-constexpr int JOYSTICK_X_PIN = 39;
-constexpr int JOYSTICK_Y_PIN = 33;
+constexpr int JOYSTICK_X_PIN = 33;
+constexpr int JOYSTICK_Y_PIN = 39;
 constexpr int JOYSTICK_BUTTON_PIN = 32;
 
 constexpr uint32_t DEBOUNCE_TIME = 250;

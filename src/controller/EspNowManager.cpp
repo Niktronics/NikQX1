@@ -1,11 +1,9 @@
 #include "EspNowManager.h"
 #include <WiFi.h>
 
-namespace {
-    constexpr uint8_t BROADCAST_ADDRESS[ESP_NOW_ETH_ALEN] = {
-        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
-    };
-}
+constexpr uint8_t NO_COMMAND = 255;
+constexpr uint32_t SEND_INTERVAL = 100;
+constexpr uint8_t BROADCAST_ADDRESS[ESP_NOW_ETH_ALEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
 bool EspNowManager::init() {
     WiFi.mode(WIFI_STA);
@@ -34,7 +32,8 @@ bool EspNowManager::init() {
     return true;
 }
 
-bool EspNowManager::sendMove(uint8_t command) {
-    if (!initialized) return false;
-    return esp_now_send(peerAddress, &command, sizeof(command)) == ESP_OK;
+void EspNowManager::sendCommand(uint8_t command) {
+    if (!initialized || command == NO_COMMAND || millis() - lastMessageTime < SEND_INTERVAL) return;
+    esp_now_send(peerAddress, &command, sizeof(command));
+    lastMessageTime = millis();
 }

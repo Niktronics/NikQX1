@@ -6,9 +6,10 @@
 class EspNowManager {
     public:
         bool init();
-        bool sendMove(uint8_t command);
+        void sendCommand(uint8_t command);
 
     private:
         uint8_t peerAddress[ESP_NOW_ETH_ALEN]{};
         bool initialized = false;
+        uint32_t lastMessageTime = 0;
 };
