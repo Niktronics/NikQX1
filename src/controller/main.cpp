@@ -6,7 +6,7 @@
 
 constexpr gpio_num_t JOYSTICK_BUTTON_GPIO = GPIO_NUM_32;
 constexpr uint32_t INACTIVITY_TIMEOUT = 60000;
-constexpr int JOYSTICK_ACTIVITY_THRESHOLD = 150;
+constexpr int JOYSTICK_ACTIVITY_THRESHOLD = 50;
 
 Joystick joystick;
 DisplayManager displayManager(joystick);
