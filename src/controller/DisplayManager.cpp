@@ -1,15 +1,12 @@
 #include "DisplayManager.h"
 #include <Arduino.h>
-#include <esp_sleep.h>
 
 constexpr int SCREEN_WIDTH = 240;
 constexpr int SCREEN_HEIGHT = 135;
 constexpr uint32_t PERFORMANCE_CHANGE_INTERVAL = 200;
 constexpr uint32_t STARTING_SCREEN_TIME = 3000;
-constexpr uint32_t INACTIVITY_TIMEOUT = 60000;
 constexpr int MIN_COORDS = 1000;
 constexpr int MAX_COORDS = 3095;
-constexpr gpio_num_t JOYSTICK_BUTTON_GPIO = GPIO_NUM_32;
 
 constexpr int JOYSTICK_X_CENTER = 2551;
 constexpr int JOYSTICK_Y_CENTER = 2518;
@@ -23,8 +20,6 @@ int selectedPerformance = 0;
 uint32_t now = 0;
 uint32_t lastPerformanceChange = 0;
 
-uint32_t lastInteraction = 0;
-
 void DisplayManager::init() {
     tft.init();
     tft.setRotation(3);
@@ -32,7 +27,6 @@ void DisplayManager::init() {
     sprite.createSprite(SCREEN_WIDTH, SCREEN_HEIGHT);
     drawStartingSprite();
     now = millis();
-    lastInteraction = now;
 }
 
 void DisplayManager::loop() {
@@ -83,26 +77,10 @@ void DisplayManager::loop() {
 uint8_t DisplayManager::getCommand() {
 
 	static uint8_t joystickCommand = 0;
-	const uint32_t currentMillis = millis();
-
-	// A press is activity even if it does not generate a command. This also
-	// prevents entering sleep while the joystick button is being held.
-	if (joystick.isPressed()) lastInteraction = currentMillis;
-
-	if (currentMillis - lastInteraction >= INACTIVITY_TIMEOUT) {
-		// GPIO32 is RTC-capable and can wake the ESP32 on the next button press.
-		// ext0 is level-triggered, so do not sleep while the button is still low;
-		// otherwise the ESP32 would wake up immediately.
-		esp_sleep_enable_ext0_wakeup(JOYSTICK_BUTTON_GPIO, 0);
-		while (digitalRead(JOYSTICK_BUTTON_GPIO) == LOW) delay(10);
-		delay(50);
-		esp_deep_sleep_start();
-	}
 
     if (pendingCommand != NO_COMMAND) {
         uint8_t command = pendingCommand;
         pendingCommand = NO_COMMAND;
-	lastInteraction = currentMillis;
 
         return command;
     }
@@ -127,8 +105,6 @@ uint8_t DisplayManager::getCommand() {
 
 	if (absXOffset >= absYOffset) joystickCommand = xOffset > 0 ? 8 : 9;
 	else joystickCommand = yOffset > 0 ? 10 : 11;
-
-	lastInteraction = currentMillis;
 
 	return joystickCommand;
 
@@ -223,7 +199,7 @@ void DisplayManager::drawFaceSprite(FACE face) {
 	sprite.pushSprite(0, 0);
 
 	if (face==FACE::STRONG_MUSCLES) {
-		delay(2500);
+		delay(1700);
 		drawFaceSprite(FACE::TIRED);
 	}
 
