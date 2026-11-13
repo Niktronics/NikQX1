@@ -56,12 +56,12 @@ void ServoManager::init() {
 }
 
 void ServoManager::setTorque(uint8_t id, bool enabled) {
-    st.EnableTorque(id, enabled ? 1 : 0);
+    st.EnableTorque(id, enabled);
 }
 
 void ServoManager::setAllTorque(bool enabled) {
     for (int i = 0; i < 8; i++) {
-        setTorque(servos[i], enabled);
+        setTorque(i, enabled);
         delay(2);
     }
 }
@@ -70,28 +70,36 @@ void ServoManager::stopServo(uint8_t id) {
     st.WritePosEx(id, st.ReadPos(id), 0, 0);
 }
 
+void ServoManager::stopAllServos() {
+    for (int i = 0; i < 8; i++) {
+        st.WritePosEx(i, st.ReadPos(i), 0, 0);
+        delay(2);
+    }
+}
+
 void ServoManager::moveServos(const uint8_t ids[], size_t count, short positions[], int speed, int acc) {
-    static constexpr size_t MAX_SERVOS = 8;
     if (count == 0 || count > MAX_SERVOS) return;
 
-    uint8_t ids_ptr[MAX_SERVOS];
     uint16_t speeds[MAX_SERVOS];
     uint8_t accs[MAX_SERVOS];
     for (size_t i = 0; i < count; i++) {
-        ids_ptr[i] = ids[i];
         speeds[i] = static_cast<uint16_t>(speed);
         accs[i] = static_cast<uint8_t>(acc);
     }
-    st.SyncWritePosEx(ids_ptr, static_cast<uint8_t>(count), positions, speeds, accs);
+
+    // SyncWritePosEx accetta u8 ID[] non-const per pigrizia della libreria, ma legge solo
+    // gli ID (SCS::syncWrite, SCS.cpp:142). const_cast evita una copia inutile su stack.
+    st.SyncWritePosEx(const_cast<uint8_t*>(ids), static_cast<uint8_t>(count), positions, speeds, accs);
 }
 
 void ServoManager::moveServos(const ServoID servos[], size_t count, short positions[], int speed, int acc) {
-    static constexpr size_t MAX_SERVOS = 8;
     if (count == 0 || count > MAX_SERVOS) return;
 
     uint8_t ids[MAX_SERVOS];
+
     for (size_t i = 0; i < count; i++) {
         ids[i] = static_cast<uint8_t>(servos[i]);
     }
+
     moveServos(ids, count, positions, speed, acc);
 }

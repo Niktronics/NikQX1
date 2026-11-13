@@ -25,16 +25,21 @@ void setup() {
     servoManager.init();
     initEspNowReceiver();
 
+    pinMode(26, OUTPUT);
+    digitalWrite(26, HIGH);
+
     // motionManager.perform(MOVE::PUSHUPS);
     // delay(1500);
     // servoManager.setAllTorque(false);
+
+
 }
 
 void loop() {
-    // motionManager.debugPower(LEG::FR, true);
+    // motionManager.debugPower(LEG::RR, true);
     // motionManager.debugPower(true);
-    // motionManager.debugFK(LEG::FR, false);
-    // motionManager.debugFK();
+    // motionManager.debugFK(LEG::FL, false);
+    // motionManager.debugFK(false);
 
     handleSerialCommand();
     handleReceivedMove();
@@ -44,7 +49,7 @@ void loop() {
     delay(10);
 }
 
-// 1=STANDING 2=LIE_DOWN 3=WAVE 4=OCTOPUS 5=PURRING 6=SWIMMING
+// 0=FORCE_STOP 1=STANDING 2=LIE_DOWN 3=WAVE 4=OCTOPUS 5=PURRING 6=SWIMMING
 // 7=PUSHUPS 8=WALKING_F 9=WALKING_B 10=ROTATION_CW 11=ROTATION_ACW
 void handleSerialCommand() {
     static char buffer[16];
@@ -57,14 +62,17 @@ void handleSerialCommand() {
             buffer[index] = '\0';
 
             if (index > 0) {
-                int cmd = atoi(buffer);
+                int cmd = atoi(buffer); // ascii to integer
 
                 if (cmd >= 1 && cmd <= 11) {
-                    LOGF("Eseguo comando %d", cmd);
                     motionManager.perform(static_cast<MOVE>(cmd));
-                    LOG("Comando eseguito");
+                    LOGF("Comando eseguito: %d", cmd);
+                if (cmd == 0) {
+                    motionManager.forceStop();
+                    LOGF("Force stop eseguito");
+                }
                 } else {
-                    LOGF("Comando non valido: %s (usare 1-11)", buffer);
+                    LOGF("Comando non valido: %s (usare 0-11)", buffer);
                 }
             }
 
@@ -85,7 +93,7 @@ void handleReceivedMove() {
     if (!newMoveAvailable) return;
     const uint8_t move = receivedMove;
     newMoveAvailable = false;
-    LOGF("Comando ESP-NOW ricevuto: %u", move);
+    LOGF("Comando espnow ricevuto: %u", move);
     motionManager.perform(static_cast<MOVE>(move));
 }
 

@@ -167,6 +167,13 @@ void MotionManager::perform(MOVE move, int speed, int acc) {
 
     }
 }
+
+void MotionManager::forceStop() {
+    sm.stopAllServos();
+    sm.setAllTorque(false);
+    currentMove = MOVE::NONE;
+}
+
 void MotionManager::performStanding(int speed, int acc) {
     speed = speed==0 ? 1100 : speed;
     acc = acc==0 ? 400 : acc;
@@ -195,7 +202,7 @@ void MotionManager::performLieDown(int speed, int acc) {
     delay(10);
     while (isMoving(LEG::FR)) { delay(10); }
 
-    constexpr float x = -9.46, y = 9.21, z = 7.34;
+    constexpr float x = -10.48, y = 8.02, z = 7.57;
     moveAllLegs(x, y, z, speed, acc, true);
 
     delay(10);
@@ -207,13 +214,14 @@ void MotionManager::performLieDown(int speed, int acc) {
 
 void MotionManager::performWave(int speed, int acc) {
 
-    speed = speed==0 ? 1300 : speed;
+    speed = speed==0 ? 1800 : speed;
     acc = acc==0 ? 400 : acc;
 
     while (currentMove != MOVE::NONE) {}
     currentMove = MOVE::WAVE;
 
     moveAllLegs(STANDING_X, STANDING_Y, STANDING_Z, speed, acc, true);
+    moveLeg(LEG::FL, -4.23, 4.74, -0.57, speed, acc, true);
 
     for (int i = 0; i <= 3; i++) {
         moveLeg(LEG::FR, 1.5, 4.9, 15.35, speed, acc);
@@ -224,9 +232,15 @@ void MotionManager::performWave(int speed, int acc) {
         while (isMoving(LEG::FR)) { delay(10); }
     }
 
-    moveAllLegs(STANDING_X, STANDING_Y, STANDING_Z, speed, acc, true);
+    moveLeg(LEG::FR, STANDING_X, STANDING_Y, STANDING_Z, 3400, 0, true);
+
     delay(10);
     while (isMoving(LEG::FR)) { delay(10); }
+
+    moveLeg(LEG::FL, STANDING_X, STANDING_Y, STANDING_Z, 3400, 0, true);
+
+    delay(10);
+    while (isMoving(LEG::FL)) { delay(10); }
 
     currentMove = MOVE::NONE;
 }
@@ -389,7 +403,7 @@ void MotionManager::performPushups(int speed, int acc) {
 void MotionManager::performWalkingLoop() {
 
     constexpr int speed = 3400;
-    constexpr int acc = 254;
+    constexpr int acc = 0;
 
     static bool initialized = false;
     static bool wasWalking = false;
@@ -409,15 +423,13 @@ void MotionManager::performWalkingLoop() {
 
     wasWalking = true;
 
-    constexpr float FR_X_1 = -10.96f; constexpr float FR_Y_1 = 7.35f; constexpr float FR_Z_1 = 7.50f;
-    constexpr float FL_X_1 = -3.49f; constexpr float FL_Y_1 = 7.08f; constexpr float FL_Z_1 = -0.18f;
-    constexpr float RR_X_1 = -4.51f; constexpr float RR_Y_1 = 0.68f; constexpr float RR_Z_1 = -0.62f;
-    constexpr float RL_X_1 = -4.51f; constexpr float RL_Y_1 = 0.68f; constexpr float RL_Z_1 = -0.62f;
+    constexpr float FSWING_X_1 = -10.96f; constexpr float FSWING_Y_1 = 7.35f; constexpr float FSWING_Z_1 = 7.50f;
+    constexpr float FSTANCE_X_1 = -3.49f; constexpr float FSTANCE_Y_1 = 7.08f; constexpr float FSTANCE_Z_1 = -0.18f;
+    constexpr float RSTANCE_X_1 = -4.51f; constexpr float RSTANCE_Y_1 = 0.68f; constexpr float RSTANCE_Z_1 = -0.62f;
 
-    constexpr float FR_X_2 = -8.42f; constexpr float FR_Y_2 = 5.67f; constexpr float FR_Z_2 = 1.06f;
-    constexpr float FL_X_2 = -7.83f; constexpr float FL_Y_2 = 0.98f; constexpr float FL_Z_2 = -0.18f;
-    constexpr float RR_X_2 = -2.89f; constexpr float RR_Y_2 = 3.53f; constexpr float RR_Z_2 = -0.62f;
-    constexpr float RL_X_2 = -2.89f; constexpr float RL_Y_2 = 3.53f; constexpr float RL_Z_2 = -0.62f;
+    constexpr float FSWING_X_2 = -8.42f; constexpr float FSWING_Y_2 = 5.67f; constexpr float FSWING_Z_2 = 1.06f;
+    constexpr float FSTANCE_X_2 = -7.83f; constexpr float FSTANCE_Y_2 = 0.98f; constexpr float FSTANCE_Z_2 = -0.18f;
+    constexpr float RSTANCE_X_2 = -2.89f; constexpr float RSTANCE_Y_2 = 3.53f; constexpr float RSTANCE_Z_2 = -0.62f;
 
     bool forward = currentMove == MOVE::WALKING_F;
 
@@ -427,51 +439,45 @@ void MotionManager::performWalkingLoop() {
     const LEG LEG_D = forward ? LEG::RL : LEG::FL;
 
     // R
-    moveLeg(LEG_A, FR_X_1, FR_Y_1, FR_Z_1, speed, acc, true);
-    moveLeg(LEG_B, FL_X_1, FL_Y_1, FL_Z_1, speed, acc, true);
-    moveLeg(LEG_C, RR_X_1, RR_Y_1, RR_Z_1, speed, acc, true);
-    moveLeg(LEG_D, RL_X_1, RL_Y_1, RL_Z_1, speed, acc, true);
+    moveLeg(LEG_A, FSWING_X_1, FSWING_Y_1, FSWING_Z_1, speed, acc, true);
+    moveLeg(LEG_B, FSTANCE_X_1, FSTANCE_Y_1, FSTANCE_Z_1, speed, acc, true);
+    moveLeg(LEG_C, RSTANCE_X_1, RSTANCE_Y_1, RSTANCE_Z_1, speed, acc, true);
+    moveLeg(LEG_D, RSTANCE_X_1, RSTANCE_Y_1, RSTANCE_Z_1, speed, acc, true);
 
     delay(5);
     while (isMoving()) { }
 
-    moveLeg(LEG_A, FR_X_2, FR_Y_2, FR_Z_2, speed, acc, true);
-    moveLeg(LEG_B, FL_X_2, FL_Y_2, FL_Z_2, speed, acc, true);
-    moveLeg(LEG_C, RR_X_2, RR_Y_2, RR_Z_2, speed, acc, true);
-    moveLeg(LEG_D, RL_X_2, RL_Y_2, RL_Z_2, speed, acc, true);
+    moveLeg(LEG_A, FSWING_X_2, FSWING_Y_2, FSWING_Z_2, speed, acc, true);
+    moveLeg(LEG_B, FSTANCE_X_2, FSTANCE_Y_2, FSTANCE_Z_2, speed, acc, true);
+    moveLeg(LEG_C, RSTANCE_X_2, RSTANCE_Y_2, RSTANCE_Z_2, speed, acc, true);
+    moveLeg(LEG_D, RSTANCE_X_2, RSTANCE_Y_2, RSTANCE_Z_2, speed, acc, true);
 
     delay(5);
     while (isMoving()) { }
 
     // L
-    moveLeg(LEG_B, FR_X_1, FR_Y_1, FR_Z_1, speed, acc, true);
-    moveLeg(LEG_A, FL_X_1, FL_Y_1, FL_Z_1, speed, acc, true);
-    moveLeg(LEG_D, RR_X_1, RR_Y_1, RR_Z_1, speed, acc, true);
-    moveLeg(LEG_C, RL_X_1, RL_Y_1, RL_Z_1, speed, acc, true);
+    moveLeg(LEG_B, FSWING_X_1, FSWING_Y_1, FSWING_Z_1, speed, acc, true);
+    moveLeg(LEG_A, FSTANCE_X_1, FSTANCE_Y_1, FSTANCE_Z_1, speed, acc, true);
+    moveLeg(LEG_D, RSTANCE_X_1, RSTANCE_Y_1, RSTANCE_Z_1, speed, acc, true);
+    moveLeg(LEG_C, RSTANCE_X_1, RSTANCE_Y_1, RSTANCE_Z_1, speed, acc, true);
 
     delay(5);
     while (isMoving()) { }
 
-    moveLeg(LEG_B, FR_X_2, FR_Y_2, FR_Z_2, speed, acc, true);
-    moveLeg(LEG_A, FL_X_2, FL_Y_2, FL_Z_2, speed, acc, true);
-    moveLeg(LEG_D, RR_X_2, RR_Y_2, RR_Z_2, speed, acc, true);
-    moveLeg(LEG_C, RL_X_2, RL_Y_2, RL_Z_2, speed, acc, true);
+    moveLeg(LEG_B, FSWING_X_2, FSWING_Y_2, FSWING_Z_2, speed, acc, true);
+    moveLeg(LEG_A, FSTANCE_X_2, FSTANCE_Y_2, FSTANCE_Z_2, speed, acc, true);
+    moveLeg(LEG_D, RSTANCE_X_2, RSTANCE_Y_2, RSTANCE_Z_2, speed, acc, true);
+    moveLeg(LEG_C, RSTANCE_X_2, RSTANCE_Y_2, RSTANCE_Z_2, speed, acc, true);
 
     delay(5);
     while (isMoving()) { }
 
-
-    // // S
-    // moveAllLegs(STANDING_X, STANDING_Y, STANDING_Z, speed, acc, true);
-    //
-    // delay(10);
-    // while (isMoving()) { delay(10); }
 }
 
 void MotionManager::performRotationLoop() {
 
     constexpr int speed = 3400;
-    constexpr int acc = 254;
+    constexpr int acc = 0;
 
     static bool initialized = false;
     static bool wasRotating = false;
@@ -492,26 +498,119 @@ void MotionManager::performRotationLoop() {
     wasRotating = true;
     const bool clockwise = currentMove == MOVE::ROTATION_CW;
 
-    const float STANCE_X = 5.0f;
-    const float STANCE_Y = clockwise ? 0.01f : -5.0f;
-    const float STANCE_Z = 0.0f;
-    const float SWING_X = -7.3f;
-    const float SWING_Y = 6.52f;
-    const float SWING_Z = 0.8f;
+    const float STANCE_X = 5.0f; const float STANCE_Y = 0.01f; const float STANCE_Z = 0.0f;
+    const float SWING_X = -7.3f; const float SWING_Y = 6.52f; const float SWING_Z = 0.8f;
 
-    moveAllLegs(STANDING_X, STANDING_Y, STANDING_Z, speed, acc, true);
+    const LEG LEG_A = clockwise ? LEG::FL : LEG::FR;
+    const LEG LEG_B = clockwise ? LEG::RR : LEG::RL;
+    const LEG LEG_C = clockwise ? LEG::FR : LEG::FL;
+    const LEG LEG_D = clockwise ? LEG::RL : LEG::RR;
+
+    moveLeg(LEG_A, STANCE_X, STANCE_Y, STANCE_Z, speed, acc, true);
+    moveLeg(LEG_B, STANCE_X, STANCE_Y, STANCE_Z, speed, acc, true);
+
+    moveLeg(LEG_C, SWING_X, SWING_Y, SWING_Z, speed, acc, true);
+    moveLeg(LEG_D, SWING_X, SWING_Y, SWING_Z, speed, acc, true);
+
+    delay(5);
+    while (isMoving()) { }
+
+    moveLeg(LEG_C, STANDING_X, STANDING_Y, STANDING_Z, speed, acc, true);
+    moveLeg(LEG_D, STANDING_X, STANDING_Y, STANDING_Z, speed, acc, true);
+
+    moveLeg(LEG_A, STANCE_X, SWING_Y, STANCE_Z, speed, acc, true);
+    moveLeg(LEG_B, STANCE_X, SWING_Y, STANCE_Z, speed, acc, true);
 
     delay(5);
     while (isMoving()) { }
 
-    moveLeg(LEG::FL, STANCE_X, STANCE_Y, STANCE_Z, speed, acc, true);
-    moveLeg(LEG::RR, STANCE_X, STANCE_Y, STANCE_Z, speed, acc, true);
+    moveLeg(LEG_A, STANDING_X, SWING_Y, STANDING_Z, speed, acc, true);
+    moveLeg(LEG_B, STANDING_X, SWING_Y, STANDING_Z, speed, acc, true);
 
-    moveLeg(LEG::FR, SWING_X, SWING_Y, SWING_Z, speed, acc, true);
-    moveLeg(LEG::RL, SWING_X, SWING_Y, SWING_Z, speed, acc, true);
 
     delay(5);
     while (isMoving()) { }
+
+    moveLeg(LEG_A, STANDING_X, STANDING_Y, STANDING_Z, speed, acc, true);
+    moveLeg(LEG_B, STANDING_X, STANDING_Y, STANDING_Z, speed, acc, true);
+
+    delay(5);
+    while (isMoving()) { }
+
+}
+
+void MotionManager::performClimbingLoop() {
+
+    constexpr int speed = 3400;
+    constexpr int acc = 0;
+
+    static bool initialized = false;
+    static bool wasClimbing = false;
+
+    const bool isClimbing = currentMove == MOVE::CLIMBING_F || currentMove == MOVE::CLIMBING_F;
+
+    if (!initialized) {
+        moveAllLegs(STANDING_X, STANDING_Y, STANDING_Z, speed, acc, true);
+        initialized = true;
+    }
+
+    if (!isClimbing) {
+        if (wasClimbing) moveAllLegs(STANDING_X, STANDING_Y, STANDING_Z, speed, acc, true);
+            wasClimbing = false;
+            return;
+        }
+
+    wasClimbing = true;
+
+    constexpr float SWING_X_1 = -10.96f; constexpr float SWING_Y_1 = 7.35f; constexpr float SWING_Z_1 = 7.50f;
+    constexpr float FSTANCE_X_1 = -3.49f; constexpr float FSTANCE_Y_1 = 7.08f; constexpr float FSTANCE_Z_1 = -0.18f;
+    constexpr float RSTANCE_X_1 = -4.51f; constexpr float RSTANCE_Y_1 = 0.68f; constexpr float RSTANCE_Z_1 = -0.62f;
+
+    constexpr float SWING_X_2 = -8.42f; constexpr float SWING_Y_2 = 5.67f; constexpr float SWING_Z_2 = 1.06f;
+    constexpr float FSTANCE_X_2 = -7.83f; constexpr float FSTANCE_Y_2 = 0.98f; constexpr float FSTANCE_Z_2 = -0.18f;
+    constexpr float RSTANCE_X_2 = -2.89f; constexpr float RSTANCE_Y_2 = 3.53f; constexpr float RSTANCE_Z_2 = -0.62f;
+
+    bool forward = currentMove == MOVE::WALKING_F;
+
+    const LEG LEG_A = forward ? LEG::FR : LEG::RR;
+    const LEG LEG_B = forward ? LEG::FL : LEG::RL;
+    const LEG LEG_C = forward ? LEG::RR : LEG::FR;
+    const LEG LEG_D = forward ? LEG::RL : LEG::FL;
+
+    // R
+    moveLeg(LEG_A, SWING_X_1, SWING_Y_1, SWING_Z_1, speed, acc, true);
+    moveLeg(LEG_B, FSTANCE_X_1, FSTANCE_Y_1, FSTANCE_Z_1, speed, acc, true);
+    moveLeg(LEG_C, RSTANCE_X_1, RSTANCE_Y_1, RSTANCE_Z_1, speed, acc, true);
+    moveLeg(LEG_D, RSTANCE_X_1, RSTANCE_Y_1, RSTANCE_Z_1, speed, acc, true);
+
+    delay(5);
+    while (isMoving()) { }
+
+    moveLeg(LEG_A, SWING_X_2, SWING_Y_2, SWING_Z_2, speed, acc, true);
+    moveLeg(LEG_B, FSTANCE_X_2, FSTANCE_Y_2, FSTANCE_Z_2, speed, acc, true);
+    moveLeg(LEG_C, RSTANCE_X_2, RSTANCE_Y_2, RSTANCE_Z_2, speed, acc, true);
+    moveLeg(LEG_D, RSTANCE_X_2, RSTANCE_Y_2, RSTANCE_Z_2, speed, acc, true);
+
+    delay(5);
+    while (isMoving()) { }
+
+    // L
+    moveLeg(LEG_B, SWING_X_1, SWING_Y_1, SWING_Z_1, speed, acc, true);
+    moveLeg(LEG_A, FSTANCE_X_1, FSTANCE_Y_1, FSTANCE_Z_1, speed, acc, true);
+    moveLeg(LEG_D, RSTANCE_X_1, RSTANCE_Y_1, RSTANCE_Z_1, speed, acc, true);
+    moveLeg(LEG_C, RSTANCE_X_1, RSTANCE_Y_1, RSTANCE_Z_1, speed, acc, true);
+
+    delay(5);
+    while (isMoving()) { }
+
+    moveLeg(LEG_B, SWING_X_2, SWING_Y_2, SWING_Z_2, speed, acc, true);
+    moveLeg(LEG_A, FSTANCE_X_2, FSTANCE_Y_2, FSTANCE_Z_2, speed, acc, true);
+    moveLeg(LEG_D, RSTANCE_X_2, RSTANCE_Y_2, RSTANCE_Z_2, speed, acc, true);
+    moveLeg(LEG_C, RSTANCE_X_2, RSTANCE_Y_2, RSTANCE_Z_2, speed, acc, true);
+
+    delay(5);
+    while (isMoving()) { }
+
 }
 
 void MotionManager::loop() {

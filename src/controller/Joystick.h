@@ -10,6 +10,7 @@ class Joystick {
         int getY() const;
         bool isPressed() const;
         bool isLongPressed() const;
+        bool isDoubleClicked() const;
 
     private:
         int x = 0, y = 0;
@@ -17,4 +18,8 @@ class Joystick {
         bool realPress = false;
         bool longPress = false;
         uint32_t lastDebounceTime = 0;
+        uint32_t pressStartTime = 0;
+        uint32_t lastClickTime = 0;
+        uint8_t clickCount = 0;
+        bool doubleClick = false;
 };

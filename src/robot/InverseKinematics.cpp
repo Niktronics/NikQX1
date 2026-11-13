@@ -1,9 +1,9 @@
 #include "InverseKinematics.h"
 #include <cmath>
 
-const float L1 = 5.2f;
-const float L2 = 8.0f;
-const float Hb = 7.35f;
+constexpr float L1 = 5.2f;
+constexpr float L2 = 8.0f;
+constexpr float Hb = 7.35f;
 
 constexpr float RAD_TO_STEPS = 4095.0f / (2.0f * M_PI);
 

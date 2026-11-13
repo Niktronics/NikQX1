@@ -1,12 +1,12 @@
 #include <Arduino.h>
 #include <esp_sleep.h>
-#include <Joystick.h>
-#include <DisplayManager.h>
-#include <EspNowManager.h>
+#include "Joystick.h"
+#include "DisplayManager.h"
+#include "EspNowManager.h"
 
 constexpr gpio_num_t JOYSTICK_BUTTON_GPIO = GPIO_NUM_32;
 constexpr uint32_t INACTIVITY_TIMEOUT = 60000;
-constexpr int JOYSTICK_ACTIVITY_THRESHOLD = 50;
+constexpr int JOYSTICK_ACTIVITY_THRESHOLD = 90;
 
 Joystick joystick;
 DisplayManager displayManager(joystick);
@@ -49,7 +49,7 @@ void loop() {
     uint8_t command = displayManager.getCommand();
     espNowManager.sendCommand(command);
 
-    Serial.println("x: " + String(joystick.getX()) + " y: " + String(joystick.getY()) + " pressed: " + String(joystick.isPressed()) + " longPressed: " + String(joystick.isLongPressed()));
+    Serial.println("x: " + String(joystick.getX()) + " y: " + String(joystick.getY()) + " pressed: " + String(joystick.isPressed()) + " longPressed: " + String(joystick.isLongPressed()) + " doubleClicked: " + String(joystick.isDoubleClicked()));
 
     delay(20);
 }

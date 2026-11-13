@@ -1,12 +1,7 @@
 #pragma once
 
 #include <C:\Users\user\Documents\PlatformIO\Projects\NikQX1\.pio\libdeps\controller\TFT_eSPI\TFT_eSPI.h>
-#include <Joystick.h>
-#include "images/STARRED_FACE_BITMAP.h"
-#include "images/PURRING_FACE_BITMAP.h"
-#include "images/TIRED_FACE_BITMAP.h"
-#include "images/SLEEPY_FACE_BITMAP.h"
-#include "images/STRONG_MUSCLES_BITMAP.h"
+#include "Joystick.h"
 
 class DisplayManager {
     public:

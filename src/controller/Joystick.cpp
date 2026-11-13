@@ -7,6 +7,7 @@ constexpr int JOYSTICK_BUTTON_PIN = 32;
 
 constexpr uint32_t DEBOUNCE_TIME = 250;
 constexpr uint32_t LONG_DEBOUNCE_TIME = 1000;
+constexpr uint32_t DOUBLE_CLICK_GAP = 400;
 
 void Joystick::init() {
     pinMode(JOYSTICK_X_PIN, INPUT);
@@ -22,9 +23,29 @@ void Joystick::loop() {
     const uint32_t now = millis();
 
     if (pressed != realPress && now - lastDebounceTime > DEBOUNCE_TIME) {
+        const bool wasPressed = realPress;
         realPress = pressed;
         longPress = false;
         lastDebounceTime = now;
+
+        if (realPress) {
+            pressStartTime = now;
+        } else if (wasPressed) {
+            if (now - pressStartTime < LONG_DEBOUNCE_TIME) {
+                if (clickCount >= 1 && clickCount < 2 && now - lastClickTime <= DOUBLE_CLICK_GAP) {
+                    clickCount++;
+                } else {
+                    clickCount = 1;
+                    doubleClick = false;
+                }
+                lastClickTime = now;
+
+                if (clickCount == 2) doubleClick = true;
+            } else {
+                clickCount = 0;
+                doubleClick = false;
+            }
+        }
     }
 
     if (realPress && !longPress && now - lastDebounceTime > LONG_DEBOUNCE_TIME) longPress = true;
@@ -44,4 +65,8 @@ bool Joystick::isPressed() const {
 
 bool Joystick::isLongPressed() const {
     return longPress;
+}
+
+bool Joystick::isDoubleClicked() const {
+    return doubleClick;
 }

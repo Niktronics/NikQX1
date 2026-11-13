@@ -1,0 +1,15 @@
+-----------------------------------
+               TODOS
+-----------------------------------
+
+IMPORTANTE:
+- GRAZIE AL CONTROLLO VOLTAGE INTERNO DEL ROBOT POSSO FERMARLO SE LA BATTERIA EROGA TROPPA POCA CORRENTE IN BASE A 3S 3.8*3 (60%)
+- fare una performance per salire rilievi front o rear, lateral (right or left)
+
+- !! dividere in stance , swing SIA ROTATE CHE CLIMB CHE WALKING PER FACILITRE DEBUGGING
+
+- ! no scorcaiatoia dell'ai che fa perdere solo tempo e non imparo nulla
+
+ALTRO:
+- look up, look down in questo stile: https://www.youtube.com/watch?v=GvM6xnSwGyY&list=WL&index=99
+- usare la guaina termorestringente nera per mettere in sicurezza tutte le saldature scoperte dei fili

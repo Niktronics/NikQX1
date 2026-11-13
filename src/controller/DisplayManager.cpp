@@ -1,5 +1,10 @@
 #include "DisplayManager.h"
 #include <Arduino.h>
+#include "images/STARRED_FACE_BITMAP.h"
+#include "images/PURRING_FACE_BITMAP.h"
+#include "images/TIRED_FACE_BITMAP.h"
+#include "images/SLEEPY_FACE_BITMAP.h"
+#include "images/STRONG_MUSCLES_BITMAP.h"
 
 constexpr int SCREEN_WIDTH = 240;
 constexpr int SCREEN_HEIGHT = 135;
@@ -197,10 +202,5 @@ void DisplayManager::drawFaceSprite(FACE face) {
 
 	sprite.drawBitmap(0, 0, bitmap, SCREEN_WIDTH, SCREEN_HEIGHT, TFT_WHITE);
 	sprite.pushSprite(0, 0);
-
-	if (face==FACE::STRONG_MUSCLES) {
-		delay(1700);
-		drawFaceSprite(FACE::TIRED);
-	}
 
 }

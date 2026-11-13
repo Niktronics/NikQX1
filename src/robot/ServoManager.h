@@ -4,6 +4,8 @@
 #include <Preferences.h>
 #include <Logger.h>
 
+#define MAX_SERVOS 8
+
 class ServoManager {
 public:
     enum class ServoID : uint8_t {
@@ -58,6 +60,7 @@ public:
     void moveServos(const ServoID servos[], size_t count, short positions[], int speed, int acc);
     void stopServo(uint8_t id);
     void stopServo(ServoID servo) { stopServo(static_cast<uint8_t>(servo)); }
+    void stopAllServos();
     void setTorque(uint8_t id, bool enabled);
     void setTorque(ServoID servo, bool enabled) { setTorque(static_cast<uint8_t>(servo), enabled); }
     void setAllTorque(bool enabled);
